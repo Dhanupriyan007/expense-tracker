@@ -44,15 +44,22 @@ function Login({ onLoginSuccess }) {
     setLoading(true);
     setErrorMsg('');
     try {
+      // Generate or retrieve persistent unique Guest ID for this browser session
+      let guestId = localStorage.getItem('guest_session_id');
+      if (!guestId) {
+        guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        localStorage.setItem('guest_session_id', guestId);
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           is_guest: true,
-          google_id: 'guest-user-demo-101',
-          name: 'Guest User',
-          email: 'guest@student.edu',
-          profile_image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GuestUser'
+          google_id: guestId,
+          name: `Guest (${guestId.slice(-4)})`,
+          email: `${guestId}@student.local`,
+          profile_image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${guestId}`
         })
       });
 
@@ -117,13 +124,13 @@ function Login({ onLoginSuccess }) {
             <div className="flex-grow border-t border-gray-200"></div>
           </div>
 
-          {/* Guest Sign In */}
+          {/* Instant Guest Sign In */}
           <button
             onClick={handleGuestSignIn}
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg px-4 py-3 font-medium transition shadow-sm disabled:opacity-50 text-sm"
           >
-            👤 Continue as Guest
+            👤 Continue as Guest (Instant Access)
           </button>
         </div>
       </div>

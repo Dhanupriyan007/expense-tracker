@@ -6,6 +6,8 @@ import Expenses from './pages/Expenses';
 import ExpenseForm from './pages/ExpenseForm';
 import Budgets from './pages/Budgets';
 import BudgetForm from './pages/BudgetForm';
+import SplitBill from './pages/SplitBill';
+import Advisor from './pages/Advisor';
 import { logoutUser } from './firebase';
 
 function App() {
@@ -23,28 +25,34 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 text-gray-800">
-        {/* Simple Top Navigation Bar */}
+        {/* Top Navigation Bar */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
           <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <div className="flex items-center space-x-6">
               <Link to="/dashboard" className="text-xl font-bold text-blue-600">
                 ExpenseTracker
               </Link>
-              <nav className="flex space-x-4 text-sm font-medium text-gray-600">
-                <Link to="/dashboard" className="hover:text-blue-600 transition">
+              <nav className="flex space-x-4 text-sm font-medium text-gray-600 overflow-x-auto">
+                <Link to="/dashboard" className="hover:text-blue-600 transition whitespace-nowrap">
                   Dashboard
                 </Link>
-                <Link to="/expenses" className="hover:text-blue-600 transition">
+                <Link to="/expenses" className="hover:text-blue-600 transition whitespace-nowrap">
                   Expenses
                 </Link>
-                <Link to="/budgets" className="hover:text-blue-600 transition">
+                <Link to="/budgets" className="hover:text-blue-600 transition whitespace-nowrap">
                   Budgets
+                </Link>
+                <Link to="/split" className="hover:text-blue-600 transition whitespace-nowrap">
+                  Split Bill 🤝
+                </Link>
+                <Link to="/advisor" className="hover:text-blue-600 transition whitespace-nowrap">
+                  AI Advisor 🤖
                 </Link>
               </nav>
             </div>
 
             {/* Profile Info & Logout */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 flex-shrink-0">
               <div className="flex items-center space-x-2">
                 <img
                   src={user.profile_image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'user'}`}
@@ -52,7 +60,7 @@ function App() {
                   referrerPolicy="no-referrer"
                   className="w-8 h-8 rounded-full border border-gray-300 object-cover"
                 />
-                <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+                <span className="text-sm font-medium text-gray-700 hidden md:inline">
                   {user.name}
                 </span>
               </div>
@@ -77,6 +85,8 @@ function App() {
             <Route path="/budgets" element={<Budgets user={user} />} />
             <Route path="/budgets/add" element={<BudgetForm user={user} />} />
             <Route path="/budgets/edit/:id" element={<BudgetForm user={user} />} />
+            <Route path="/split" element={<SplitBill user={user} />} />
+            <Route path="/advisor" element={<Advisor user={user} />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>

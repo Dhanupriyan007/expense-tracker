@@ -2,7 +2,9 @@ import os
 import json
 import time
 import base64
+import re
 import urllib.request
+from datetime import datetime, date
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db import get_db_connection, init_db
@@ -10,7 +12,7 @@ from db import get_db_connection, init_db
 app = Flask(__name__)
 CORS(app)
 
-# Fallback In-Memory Storage
+# Fallback In-Memory Storage (per user_id)
 MOCK_USERS = {}
 MOCK_EXPENSES = [
     {"id": 1, "user_id": 1, "description": "Textbooks & Supplies", "amount": 120.00, "category": "Education", "payment_method": "Credit Card", "expense_date": "2026-07-20"},
@@ -22,6 +24,10 @@ MOCK_BUDGETS = [
     {"id": 2, "user_id": 1, "category": "Education", "budget": 200.00},
     {"id": 3, "user_id": 1, "category": "Transport", "budget": 100.00}
 ]
+MOCK_SPLITS = [
+    {"id": 1, "user_id": 1, "title": "Hostel WiFi Bill", "total_amount": 60.00, "paid_by": "You", "split_members": ["Alex", "Sam", "You"], "your_share": 20.00, "settled": False},
+    {"id": 2, "user_id": 1, "title": "Friday Night Pizza", "total_amount": 45.00, "paid_by": "Alex", "split_members": ["Alex", "You"], "your_share": 22.50, "settled": True}
+]
 
 # Initialize Database Schema if MySQL is available
 init_db()
@@ -29,6 +35,7 @@ init_db()
 def verify_token(id_token):
     """
     Cryptographically verify Firebase and Google ID tokens.
+    Skipped for guest login to guarantee instant response times.
     """
     if not id_token:
         return None
@@ -36,7 +43,7 @@ def verify_token(id_token):
     try:
         url = f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=5) as response:
+        with urllib.request.urlopen(req, timeout=3) as response:
             if response.status == 200:
                 data = json.loads(response.read().decode('utf-8'))
                 if 'sub' in data:
@@ -75,25 +82,33 @@ def verify_token(id_token):
     return None
 
 # ----------------------------------------------------
-# AUTHENTICATION API
+# INSTANT AUTHENTICATION API (GUEST + GOOGLE)
 # ----------------------------------------------------
 @app.route('/api/auth/google', methods=['POST'])
 def google_auth():
     data = request.get_json() or {}
+    is_guest = data.get('is_guest', False)
     id_token = data.get('idToken')
 
-    token_payload = verify_token(id_token)
-
-    if token_payload:
-        google_id = token_payload.get('sub')
-        email = token_payload.get('email')
-        name = token_payload.get('name') or data.get('name') or (email.split('@')[0] if email else 'Google User')
-        profile_image = token_payload.get('picture') or data.get('profile_image')
+    # Instant response for Guest login (no network verification overhead)
+    if is_guest or not id_token or data.get('google_id', '').startswith('guest_'):
+        google_id = data.get('google_id') or ('guest_' + str(int(time.time())) + '_demo')
+        name = data.get('name') or 'Guest Student'
+        email = data.get('email') or f"{google_id}@student.local"
+        profile_image = data.get('profile_image') or f"https://api.dicebear.com/7.x/avataaars/svg?seed={google_id}"
     else:
-        google_id = data.get('google_id')
-        name = data.get('name')
-        email = data.get('email')
-        profile_image = data.get('profile_image')
+        # Verify Token only for real Google Sign-In
+        token_payload = verify_token(id_token)
+        if token_payload:
+            google_id = token_payload.get('sub')
+            email = token_payload.get('email')
+            name = token_payload.get('name') or data.get('name') or (email.split('@')[0] if email else 'Google User')
+            profile_image = token_payload.get('picture') or data.get('profile_image')
+        else:
+            google_id = data.get('google_id')
+            name = data.get('name')
+            email = data.get('email')
+            profile_image = data.get('profile_image')
 
     if not google_id or not email:
         return jsonify({'error': 'Invalid user credentials'}), 400
@@ -114,7 +129,6 @@ def google_auth():
                 cursor.execute("SELECT * FROM users WHERE google_id = %s", (google_id,))
                 user = cursor.fetchone()
             else:
-                # Update Gmail profile picture and name in MySQL if available
                 if profile_image or name:
                     cursor.execute(
                         "UPDATE users SET name = COALESCE(%s, name), profile_image = COALESCE(%s, profile_image) WHERE google_id = %s",
@@ -132,18 +146,22 @@ def google_auth():
             if conn:
                 conn.close()
 
-    mock_user = {
-        'id': 1,
-        'google_id': google_id,
-        'name': name or 'Student User',
-        'email': email,
-        'profile_image': profile_image or 'https://via.placeholder.com/150'
-    }
-    MOCK_USERS[google_id] = mock_user
-    return jsonify({'success': True, 'user': mock_user}), 200
+    # Fallback storage per unique guest/user ID
+    if google_id not in MOCK_USERS:
+        # Assign unique numeric id
+        new_id = len(MOCK_USERS) + 10
+        MOCK_USERS[google_id] = {
+            'id': new_id,
+            'google_id': google_id,
+            'name': name or 'Guest Student',
+            'email': email,
+            'profile_image': profile_image or 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest'
+        }
+    
+    return jsonify({'success': True, 'user': MOCK_USERS[google_id]}), 200
 
 # ----------------------------------------------------
-# DASHBOARD API (WITH BUDGET VS EXPENSE ALERT MATCHING)
+# DASHBOARD API
 # ----------------------------------------------------
 @app.route('/api/dashboard', methods=['GET'])
 def get_dashboard():
@@ -168,7 +186,6 @@ def get_dashboard():
                 item['amount'] = float(item['amount'])
                 item['expense_date'] = str(item['expense_date'])
 
-            # Category matching for budget alerts
             cursor.execute("SELECT category, budget FROM budgets WHERE user_id = %s", (user_id,))
             user_budgets = cursor.fetchall()
             
@@ -205,10 +222,17 @@ def get_dashboard():
 
             remaining_budget = total_budget - total_expenses
 
+            # Safe Daily Allowance calculation
+            now = datetime.now()
+            days_in_month = 30
+            remaining_days = max(1, days_in_month - now.day)
+            daily_allowance = max(0.0, round(remaining_budget / remaining_days, 2)) if remaining_budget > 0 else 0.0
+
             return jsonify({
                 'total_expenses': round(total_expenses, 2),
                 'total_budget': round(total_budget, 2),
                 'remaining_budget': round(remaining_budget, 2),
+                'daily_allowance': daily_allowance,
                 'recent_expenses': recent_expenses,
                 'alerts': alerts
             }), 200
@@ -217,16 +241,24 @@ def get_dashboard():
             if conn:
                 conn.close()
 
-    # Fallback Calculation & Matching
-    tot_exp = sum(float(x['amount']) for x in MOCK_EXPENSES)
-    tot_bud = sum(float(x['budget']) for x in MOCK_BUDGETS)
-    rec_exp = sorted(MOCK_EXPENSES, key=lambda x: x['expense_date'], reverse=True)[:5]
+    # Fallback Per-User Filter
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+    user_exps = [x for x in MOCK_EXPENSES if x.get('user_id') == user_id_int or user_id_int == 1]
+    user_buds = [x for x in MOCK_BUDGETS if x.get('user_id') == user_id_int or user_id_int == 1]
+
+    tot_exp = sum(float(x['amount']) for x in user_exps)
+    tot_bud = sum(float(x['budget']) for x in user_buds)
+    rec_exp = sorted(user_exps, key=lambda x: x['expense_date'], reverse=True)[:5]
+    remaining = tot_bud - tot_exp
+
+    days_left = max(1, 30 - datetime.now().day)
+    daily_allowance = max(0.0, round(remaining / days_left, 2)) if remaining > 0 else 0.0
 
     alerts = []
-    for b in MOCK_BUDGETS:
+    for b in user_buds:
         cat = b['category']
         budget_val = float(b['budget'])
-        spent_val = sum(float(x['amount']) for x in MOCK_EXPENSES if x['category'] == cat)
+        spent_val = sum(float(x['amount']) for x in user_exps if x['category'] == cat)
         percentage = (spent_val / budget_val * 100) if budget_val > 0 else 0
         if spent_val >= budget_val:
             alerts.append({
@@ -250,13 +282,14 @@ def get_dashboard():
     return jsonify({
         'total_expenses': round(tot_exp, 2),
         'total_budget': round(tot_bud, 2),
-        'remaining_budget': round(tot_bud - tot_exp, 2),
+        'remaining_budget': round(remaining, 2),
+        'daily_allowance': daily_allowance,
         'recent_expenses': rec_exp,
         'alerts': alerts
     }), 200
 
 # ----------------------------------------------------
-# EXPENSES API
+# EXPENSES API (WITH NATURAL LANGUAGE QUICK-ADD)
 # ----------------------------------------------------
 @app.route('/api/expenses', methods=['GET'])
 def get_expenses():
@@ -278,7 +311,9 @@ def get_expenses():
             if conn:
                 conn.close()
 
-    return jsonify(MOCK_EXPENSES), 200
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+    res = [x for x in MOCK_EXPENSES if x.get('user_id') == user_id_int or user_id_int == 1]
+    return jsonify(res), 200
 
 @app.route('/api/expenses/<int:expense_id>', methods=['GET'])
 def get_expense(expense_id):
@@ -337,18 +372,92 @@ def create_expense():
             if conn:
                 conn.close()
 
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
     new_id = max([x['id'] for x in MOCK_EXPENSES], default=0) + 1
     new_expense = {
         'id': new_id,
-        'user_id': user_id,
+        'user_id': user_id_int,
         'description': description,
         'amount': float(amount),
         'category': category,
         'payment_method': payment_method or 'Cash',
-        'expense_date': expense_date or '2026-07-25'
+        'expense_date': expense_date or datetime.now().strftime('%Y-%m-%d')
     }
     MOCK_EXPENSES.append(new_expense)
     return jsonify({'message': 'Expense created successfully', 'id': new_id}), 201
+
+# Natural Language Quick Add Parser
+@app.route('/api/expenses/quick-add', methods=['POST'])
+def quick_add_expense():
+    data = request.get_json() or {}
+    text = data.get('text', '')
+    user_id = data.get('user_id', 1)
+
+    if not text:
+        return jsonify({'error': 'No input text provided'}), 400
+
+    # Extract amount using regex
+    amount_match = re.search(r'(\$|₹|USD|INR)?\s*([0-9]+(\.[0-9]{1,2})?)', text, re.IGNORECASE)
+    amount = float(amount_match.group(2)) if amount_match else 10.0
+
+    # Determine Payment Method
+    payment_method = "Cash"
+    if re.search(r'\b(upi|gpay|phonepe|paytm)\b', text, re.IGNORECASE):
+        payment_method = "UPI"
+    elif re.search(r'\b(card|debit|credit)\b', text, re.IGNORECASE):
+        payment_method = "Debit Card"
+    elif re.search(r'\b(bank|netbanking)\b', text, re.IGNORECASE):
+        payment_method = "Net Banking"
+
+    # Determine Category & Description
+    category = "Other"
+    if re.search(r'\b(lunch|dinner|breakfast|food|snack|coffee|pizza|groceries|burger|canteen)\b', text, re.IGNORECASE):
+        category = "Food"
+    elif re.search(r'\b(book|fees|college|tuition|stationery|course|exam)\b', text, re.IGNORECASE):
+        category = "Education"
+    elif re.search(r'\b(bus|fuel|petrol|uber|cab|train|auto|metro)\b', text, re.IGNORECASE):
+        category = "Transport"
+    elif re.search(r'\b(rent|hostel|bill|wifi|electricity)\b', text, re.IGNORECASE):
+        category = "Rent & Bills"
+    elif re.search(r'\b(movie|game|gaming|party|fun)\b', text, re.IGNORECASE):
+        category = "Entertainment"
+
+    # Clean description
+    desc = re.sub(r'(\$|₹|USD|INR)?\s*[0-9]+(\.[0-9]{1,2})?', '', text).strip()
+    desc = re.sub(r'\b(spent|paid|for|via|on|using|with)\b', '', desc, flags=re.IGNORECASE).strip()
+    if not desc:
+        desc = f"Quick {category} Expense"
+
+    expense_date = datetime.now().strftime('%Y-%m-%d')
+
+    # Save expense
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            query = "INSERT INTO expenses (user_id, description, amount, category, payment_method, expense_date) VALUES (%s, %s, %s, %s, %s, %s)"
+            cursor.execute(query, (user_id, desc.title(), amount, category, payment_method, expense_date))
+            conn.commit()
+            new_id = cursor.lastrowid
+            cursor.close()
+            conn.close()
+            return jsonify({'message': 'Parsed & created successfully', 'parsed': {'description': desc.title(), 'amount': amount, 'category': category, 'payment_method': payment_method}}), 201
+        except Exception as e:
+            print("DB Quick Add Error:", e)
+
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+    new_id = max([x['id'] for x in MOCK_EXPENSES], default=0) + 1
+    new_expense = {
+        'id': new_id,
+        'user_id': user_id_int,
+        'description': desc.title(),
+        'amount': amount,
+        'category': category,
+        'payment_method': payment_method,
+        'expense_date': expense_date
+    }
+    MOCK_EXPENSES.append(new_expense)
+    return jsonify({'message': 'Parsed & created successfully', 'parsed': new_expense}), 201
 
 @app.route('/api/expenses/<int:expense_id>', methods=['PUT'])
 def update_expense(expense_id):
@@ -363,11 +472,7 @@ def update_expense(expense_id):
     if conn:
         try:
             cursor = conn.cursor()
-            query = """
-                UPDATE expenses 
-                SET description = %s, amount = %s, category = %s, payment_method = %s, expense_date = %s
-                WHERE id = %s
-            """
+            query = "UPDATE expenses SET description = %s, amount = %s, category = %s, payment_method = %s, expense_date = %s WHERE id = %s"
             cursor.execute(query, (description, amount, category, payment_method, expense_date, expense_id))
             conn.commit()
             cursor.close()
@@ -375,8 +480,6 @@ def update_expense(expense_id):
             return jsonify({'message': 'Expense updated successfully'}), 200
         except Exception as e:
             print("DB Error updating expense:", e)
-            if conn:
-                conn.close()
 
     for item in MOCK_EXPENSES:
         if item['id'] == expense_id:
@@ -402,8 +505,6 @@ def delete_expense(expense_id):
             return jsonify({'message': 'Expense deleted successfully'}), 200
         except Exception as e:
             print("DB Error deleting expense:", e)
-            if conn:
-                conn.close()
 
     global MOCK_EXPENSES
     MOCK_EXPENSES = [x for x in MOCK_EXPENSES if x['id'] != expense_id]
@@ -439,14 +540,16 @@ def get_budgets():
             return jsonify(budgets), 200
         except Exception as e:
             print("DB Error getting budgets:", e)
-            if conn:
-                conn.close()
+
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+    user_buds = [x for x in MOCK_BUDGETS if x.get('user_id') == user_id_int or user_id_int == 1]
+    user_exps = [x for x in MOCK_EXPENSES if x.get('user_id') == user_id_int or user_id_int == 1]
 
     res = []
-    for b in MOCK_BUDGETS:
+    for b in user_buds:
         cat = b['category']
         b_val = float(b['budget'])
-        spent_val = sum(float(x['amount']) for x in MOCK_EXPENSES if x['category'] == cat)
+        spent_val = sum(float(x['amount']) for x in user_exps if x['category'] == cat)
         res.append({
             'id': b['id'],
             'user_id': b['user_id'],
@@ -475,8 +578,6 @@ def get_budget(budget_id):
             return jsonify({'error': 'Budget not found'}), 404
         except Exception as e:
             print("DB Error getting budget:", e)
-            if conn:
-                conn.close()
 
     budget = next((item for item in MOCK_BUDGETS if item['id'] == budget_id), None)
     if budget:
@@ -506,13 +607,12 @@ def create_budget():
             return jsonify({'message': 'Budget created successfully', 'id': new_id}), 201
         except Exception as e:
             print("DB Error creating budget:", e)
-            if conn:
-                conn.close()
 
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
     new_id = max([x['id'] for x in MOCK_BUDGETS], default=0) + 1
     new_budget = {
         'id': new_id,
-        'user_id': user_id,
+        'user_id': user_id_int,
         'category': category,
         'budget': float(budget)
     }
@@ -537,8 +637,6 @@ def update_budget(budget_id):
             return jsonify({'message': 'Budget updated successfully'}), 200
         except Exception as e:
             print("DB Error updating budget:", e)
-            if conn:
-                conn.close()
 
     for item in MOCK_BUDGETS:
         if item['id'] == budget_id:
@@ -561,12 +659,131 @@ def delete_budget(budget_id):
             return jsonify({'message': 'Budget deleted successfully'}), 200
         except Exception as e:
             print("DB Error deleting budget:", e)
-            if conn:
-                conn.close()
 
     global MOCK_BUDGETS
     MOCK_BUDGETS = [x for x in MOCK_BUDGETS if x['id'] != budget_id]
     return jsonify({'message': 'Budget deleted successfully'}), 200
+
+# ----------------------------------------------------
+# UNIQUE FEATURE 1: ROOMMATE / GROUP EXPENSE SPLITTER
+# ----------------------------------------------------
+@app.route('/api/splits', methods=['GET'])
+def get_splits():
+    user_id = request.args.get('user_id', 1)
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+    splits = [s for s in MOCK_SPLITS if s.get('user_id') == user_id_int or user_id_int == 1]
+    return jsonify(splits), 200
+
+@app.route('/api/splits', methods=['POST'])
+def create_split():
+    data = request.get_json() or {}
+    user_id = data.get('user_id', 1)
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+    
+    title = data.get('title')
+    total_amount = float(data.get('total_amount', 0))
+    paid_by = data.get('paid_by', 'You')
+    members_raw = data.get('members', 'Alex, Sam, You')
+    
+    if isinstance(members_raw, str):
+        members = [m.strip() for m in members_raw.split(',') if m.strip()]
+    else:
+        members = members_raw or ['You']
+        
+    num_members = max(1, len(members))
+    share = round(total_amount / num_members, 2)
+    
+    new_id = max([x['id'] for x in MOCK_SPLITS], default=0) + 1
+    split_entry = {
+        'id': new_id,
+        'user_id': user_id_int,
+        'title': title,
+        'total_amount': total_amount,
+        'paid_by': paid_by,
+        'split_members': members,
+        'your_share': share,
+        'settled': False
+    }
+    MOCK_SPLITS.append(split_entry)
+    return jsonify({'message': 'Group split created successfully', 'split': split_entry}), 201
+
+@app.route('/api/splits/<int:split_id>/settle', methods=['PUT'])
+def settle_split(split_id):
+    for s in MOCK_SPLITS:
+        if s['id'] == split_id:
+            s['settled'] = True
+            return jsonify({'message': 'Bill settled!'}), 200
+    return jsonify({'error': 'Split not found'}), 404
+
+# ----------------------------------------------------
+# UNIQUE FEATURE 2: AI FINANCIAL HEALTH ADVISOR
+# ----------------------------------------------------
+@app.route('/api/advisor', methods=['GET'])
+def get_financial_advisor():
+    user_id = request.args.get('user_id', 1)
+    user_id_int = int(user_id) if str(user_id).isdigit() else 1
+
+    user_exps = [x for x in MOCK_EXPENSES if x.get('user_id') == user_id_int or user_id_int == 1]
+    user_buds = [x for x in MOCK_BUDGETS if x.get('user_id') == user_id_int or user_id_int == 1]
+
+    tot_exp = sum(float(x['amount']) for x in user_exps)
+    tot_bud = sum(float(x['budget']) for x in user_buds)
+
+    # Health score calculation algorithm
+    if tot_bud == 0:
+        health_score = 75
+        badge = "Getting Started 🚀"
+    else:
+        savings_ratio = max(0, (tot_bud - tot_exp) / tot_bud)
+        if savings_ratio >= 0.3:
+            health_score = 92
+            badge = "Master Budgeter 🏆"
+        elif savings_ratio >= 0.15:
+            health_score = 82
+            badge = "Smart Student Saver 🎓"
+        elif savings_ratio >= 0.0:
+            health_score = 68
+            badge = "On The Margin ⚖️"
+        else:
+            health_score = 45
+            badge = "Budget Overspender ⚠️"
+
+    # Category breakdown analysis
+    cat_totals = {}
+    for e in user_exps:
+        cat = e['category']
+        cat_totals[cat] = cat_totals.get(cat, 0) + float(e['amount'])
+
+    recommendations = []
+    food_spent = cat_totals.get('Food', 0)
+    if food_spent > (tot_exp * 0.4) and food_spent > 0:
+        recommendations.append({
+            'icon': '🍕',
+            'title': 'High Food & Dining Out Expense',
+            'advice': f"Food accounts for {round(food_spent/tot_exp*100)}% of your total spending. Preparing 2 extra meals a week at home could save ~$40 monthly!"
+        })
+
+    rent_spent = cat_totals.get('Rent & Bills', 0)
+    if rent_spent > 0:
+        recommendations.append({
+            'icon': '🏠',
+            'title': 'Fixed Living Expenses Tracked',
+            'advice': f"Hostel & Rent is locked at ${rent_spent:.2f}. Try using our 'Roommate Splitter' tab to share common room bills with flatmates!"
+        })
+
+    recommendations.append({
+        'icon': '💡',
+        'title': 'Student Discount Opportunity',
+        'advice': "Use your college email (.edu) to activate free student discounts for Spotify, Prime, GitHub, and Transport passes!"
+    })
+
+    return jsonify({
+        'health_score': health_score,
+        'badge': badge,
+        'total_expenses': round(tot_exp, 2),
+        'total_budget': round(tot_bud, 2),
+        'recommendations': recommendations
+    }), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
