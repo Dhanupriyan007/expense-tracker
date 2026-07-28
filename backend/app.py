@@ -76,6 +76,11 @@ def verify_token(id_token):
 
     return None
 
+# Health Check Route (used for background server warmup)
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'ok'}), 200
+
 # Auth Route
 @app.route('/api/auth/google', methods=['POST'])
 def google_auth():

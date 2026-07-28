@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { signInWithGoogle } from '../firebase';
 import { API_BASE_URL } from '../config';
 
 function Login({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Background ping on Login page load to warm up free server containers (eliminates cold starts)
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/health`).catch(() => {});
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    setWakingUp(false);
     setErrorMsg('');
+
+    // Timer to notify user if free server host is waking up from sleep
+    const wakeTimer = setTimeout(() => setWakingUp(true), 2000);
+
     try {
       const { user, idToken } = await signInWithGoogle();
       
@@ -34,13 +45,19 @@ function Login({ onLoginSuccess }) {
       console.error("Google Authentication error:", error);
       setErrorMsg(error.message || "Failed to sign in with Google.");
     } finally {
+      clearTimeout(wakeTimer);
       setLoading(false);
+      setWakingUp(false);
     }
   };
 
   const handleGuestSignIn = async () => {
     setLoading(true);
+    setWakingUp(false);
     setErrorMsg('');
+
+    const wakeTimer = setTimeout(() => setWakingUp(true), 1800);
+
     try {
       let guestId = localStorage.getItem('guest_session_id');
       if (!guestId) {
@@ -70,7 +87,9 @@ function Login({ onLoginSuccess }) {
       console.error("Guest Sign-In error:", error);
       setErrorMsg("Failed to connect to backend server.");
     } finally {
+      clearTimeout(wakeTimer);
       setLoading(false);
+      setWakingUp(false);
     }
   };
 
@@ -79,6 +98,12 @@ function Login({ onLoginSuccess }) {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Expense Tracker</h1>
         <p className="text-gray-600 mb-6">Manage your student expenses easily</p>
+
+        {wakingUp && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs rounded-md font-medium text-left">
+            Waking up free server host... Please wait a few seconds.
+          </div>
+        )}
 
         {errorMsg && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md text-left">
