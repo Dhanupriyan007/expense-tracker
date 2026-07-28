@@ -12,7 +12,6 @@ function Dashboard({ user }) {
   });
   const [loading, setLoading] = useState(true);
 
-  // Quick Add NLP Input State
   const [quickText, setQuickText] = useState('');
   const [quickLoading, setQuickLoading] = useState(false);
 
@@ -68,18 +67,16 @@ function Dashboard({ user }) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.name} 👋</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.name}</h1>
           <p className="text-xs text-gray-500 mt-1">Student Account ID: {user.google_id || user.id}</p>
         </div>
 
-        {/* Safe Daily Allowance Pill */}
         <div className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg text-sm text-blue-900 flex items-center gap-2 font-medium">
-          <span>⚡ Daily Safe Allowance:</span>
+          <span>Daily Safe Allowance:</span>
           <strong className="text-blue-600 text-base font-bold">${data.daily_allowance.toFixed(2)} / day</strong>
         </div>
       </div>
 
-      {/* Budget Warning & Exceeded Alert Banners */}
       {data.alerts && data.alerts.length > 0 && (
         <div className="space-y-3">
           {data.alerts.map((alert, index) => (
@@ -97,10 +94,9 @@ function Dashboard({ user }) {
         </div>
       )}
 
-      {/* Natural Language Quick-Add Bar */}
       <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-xl shadow-md text-white">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-2">
-          ⚡ Quick Voice / Text Expense Entry
+          Quick Text Expense Entry
         </h2>
         <form onSubmit={handleQuickAdd} className="flex flex-col sm:flex-row gap-3">
           <input
@@ -120,7 +116,6 @@ function Dashboard({ user }) {
         </form>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <p className="text-sm font-medium text-gray-500">Total Expenses</p>
@@ -140,7 +135,6 @@ function Dashboard({ user }) {
         </div>
       </div>
 
-      {/* Recent Expenses */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Expenses</h2>
         {data.recent_expenses.length === 0 ? (

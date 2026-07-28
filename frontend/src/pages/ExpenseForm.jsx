@@ -63,7 +63,6 @@ function ExpenseForm({ user }) {
       const response = await fetch(`${API_BASE_URL}/api/expenses/${id}`);
       const data = await response.json();
       if (response.ok) {
-        // Handle Description matching
         if (PRESET_DESCRIPTIONS.includes(data.description)) {
           setDescOption(data.description);
         } else {
@@ -71,7 +70,6 @@ function ExpenseForm({ user }) {
           setCustomDesc(data.description || '');
         }
 
-        // Handle Category matching
         if (PRESET_CATEGORIES.includes(data.category)) {
           setCategoryOption(data.category);
         } else {
@@ -106,7 +104,6 @@ function ExpenseForm({ user }) {
       return;
     }
 
-    // Budget Matching & Alert Checking
     const matchedBudget = budgets.find(b => b.category.toLowerCase() === finalCategory.toLowerCase());
     if (matchedBudget) {
       const currentSpent = Number(matchedBudget.spent || 0);
@@ -117,9 +114,9 @@ function ExpenseForm({ user }) {
       if (budgetLimit > 0) {
         const newPercentage = (totalNewSpent / budgetLimit) * 100;
         if (totalNewSpent >= budgetLimit) {
-          alert(`🚨 BUDGET EXCEEDED ALERT!\n\nThis expense will bring your total spending for "${finalCategory}" to $${totalNewSpent.toFixed(2)}, which EXCEEDS your budget of $${budgetLimit.toFixed(2)}!`);
+          alert(`BUDGET EXCEEDED ALERT!\n\nThis expense will bring your total spending for "${finalCategory}" to $${totalNewSpent.toFixed(2)}, which EXCEEDS your budget of $${budgetLimit.toFixed(2)}!`);
         } else if (newPercentage >= 80) {
-          alert(`⚠️ BUDGET WARNING!\n\nThis expense brings your "${finalCategory}" budget to ${newPercentage.toFixed(1)}% ($${totalNewSpent.toFixed(2)} spent of $${budgetLimit.toFixed(2)} limit).`);
+          alert(`BUDGET WARNING!\n\nThis expense brings your "${finalCategory}" budget to ${newPercentage.toFixed(1)}% ($${totalNewSpent.toFixed(2)} spent of $${budgetLimit.toFixed(2)} limit).`);
         }
       }
     }
@@ -165,7 +162,6 @@ function ExpenseForm({ user }) {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Description Dropdown & Custom Option */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <select
@@ -192,7 +188,6 @@ function ExpenseForm({ user }) {
           )}
         </div>
 
-        {/* Category Dropdown & Custom Option */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select
@@ -219,7 +214,6 @@ function ExpenseForm({ user }) {
           )}
         </div>
 
-        {/* Amount Input */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
           <input
@@ -233,7 +227,6 @@ function ExpenseForm({ user }) {
           />
         </div>
 
-        {/* Payment Method */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
           <select
@@ -249,7 +242,6 @@ function ExpenseForm({ user }) {
           </select>
         </div>
 
-        {/* Date Input */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
           <input
@@ -261,7 +253,6 @@ function ExpenseForm({ user }) {
           />
         </div>
 
-        {/* Form Action Buttons */}
         <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"

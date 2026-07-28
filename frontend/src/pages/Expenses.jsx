@@ -76,7 +76,7 @@ function Expenses({ user }) {
             onClick={handleExportCSV}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition flex items-center gap-1.5"
           >
-            📥 Export CSV
+            Export CSV
           </button>
           <button
             onClick={() => navigate('/expenses/add')}

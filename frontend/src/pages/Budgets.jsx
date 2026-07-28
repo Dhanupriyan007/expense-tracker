@@ -80,16 +80,15 @@ function Budgets({ user }) {
                     <h3 className="text-xl font-bold text-gray-800">{item.category}</h3>
                   </div>
 
-                  {/* Alert Badges */}
                   <div>
                     {isExceeded && (
                       <span className="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded border border-red-200">
-                        🚨 EXCEEDED ({percentage.toFixed(0)}%)
+                        EXCEEDED ({percentage.toFixed(0)}%)
                       </span>
                     )}
                     {isWarning && (
                       <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded border border-yellow-200">
-                        ⚠️ WARNING ({percentage.toFixed(0)}%)
+                        WARNING ({percentage.toFixed(0)}%)
                       </span>
                     )}
                     {!isExceeded && !isWarning && (
@@ -100,13 +99,11 @@ function Budgets({ user }) {
                   </div>
                 </div>
 
-                {/* Progress Details */}
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Spent: <strong className="text-gray-900">${spent.toFixed(2)}</strong></span>
                   <span>Budget: <strong className="text-gray-900">${limit.toFixed(2)}</strong></span>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex justify-end space-x-2 pt-4 border-t border-gray-100 mt-4">
                   <button
                     onClick={() => navigate(`/budgets/edit/${item.id}`)}

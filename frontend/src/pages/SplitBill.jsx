@@ -5,7 +5,6 @@ function SplitBill({ user }) {
   const [splits, setSplits] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Form State
   const [title, setTitle] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [paidBy, setPaidBy] = useState('You');
@@ -70,13 +69,12 @@ function SplitBill({ user }) {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">🤝 Roommate & Flat Bill Splitter</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Roommate & Flat Bill Splitter</h1>
         <p className="text-gray-600 text-sm mt-1">
-          Easily split hostel rent, WiFi bills, and group dining with flatmates without awkward math!
+          Easily split hostel rent, WiFi bills, and group dining with flatmates.
         </p>
       </div>
 
-      {/* Add New Shared Bill Form */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">+ Add Shared Bill</h2>
         <form onSubmit={handleAddSplit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,7 +138,6 @@ function SplitBill({ user }) {
         </form>
       </div>
 
-      {/* Active Splits Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
           <h2 className="font-semibold text-gray-800">Shared Bills & Balances</h2>
@@ -175,7 +172,7 @@ function SplitBill({ user }) {
                     <td className="py-3 px-4 text-center">
                       {item.settled ? (
                         <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded">
-                          ✓ Settled
+                          Settled
                         </span>
                       ) : (
                         <button

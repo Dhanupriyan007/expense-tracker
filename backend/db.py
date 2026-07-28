@@ -3,10 +3,8 @@ from dotenv import load_dotenv
 import mysql.connector
 from mysql.connector import Error, pooling
 
-# Load environment variables from .env (local development only)
 load_dotenv()
 
-# Database Configuration
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
@@ -14,11 +12,9 @@ DB_NAME = os.getenv("DB_NAME", "expense_tracker")
 DB_PORT = int(os.getenv("DB_PORT", "3306"))
 POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))
 
-# Global High-Performance Connection Pool
 db_pool = None
 
 def init_pool():
-    """Initialize the MySQL Connection Pool for fast connection reuse."""
     global db_pool
     if db_pool is None:
         try:
@@ -32,19 +28,15 @@ def init_pool():
                 database=DB_NAME,
                 port=DB_PORT
             )
-            print(f"⚡ High-performance MySQL Connection Pool created with {POOL_SIZE} connections.")
+            print(f"MySQL Connection Pool created with {POOL_SIZE} connections.")
         except Error as e:
-            print(f"Notice: MySQL Pool creation deferred ({e}). Will use dynamic connections or fallback.")
+            print(f"Notice: MySQL Pool creation deferred ({e}).")
             db_pool = None
 
-# Attempt pool initialization on startup
 init_pool()
 
 def get_db_connection():
-    """
-    Returns an active database connection instantly from the Connection Pool.
-    Eliminates TCP handshake overhead for sub-millisecond query responses.
-    """
+    """Return a pooled MySQL database connection if available."""
     global db_pool
     if db_pool is None:
         init_pool()
@@ -57,7 +49,6 @@ def get_db_connection():
         except Error as e:
             print(f"Pool checkout notice: {e}")
 
-    # Direct connection fallback if pool is full or unavailable
     try:
         connection = mysql.connector.connect(
             host=DB_HOST,
@@ -72,7 +63,7 @@ def get_db_connection():
         return None
 
 def init_db():
-    """Create database and tables if they do not exist."""
+    """Initialize database and create schema tables."""
     try:
         connection = mysql.connector.connect(
             host=DB_HOST,
@@ -124,7 +115,6 @@ def init_db():
         connection.close()
 
         print("MySQL database initialized successfully.")
-        # Re-initialize pool after database creation
         init_pool()
 
     except Error as e:

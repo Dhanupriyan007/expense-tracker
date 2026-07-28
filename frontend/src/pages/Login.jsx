@@ -10,10 +10,8 @@ function Login({ onLoginSuccess }) {
     setLoading(true);
     setErrorMsg('');
     try {
-      // 1. Perform actual Google Authentication popup via Firebase
       const { user, idToken } = await signInWithGoogle();
       
-      // 2. Send the cryptographically signed Google ID Token to Flask backend for verification
       const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -34,7 +32,7 @@ function Login({ onLoginSuccess }) {
       }
     } catch (error) {
       console.error("Google Authentication error:", error);
-      setErrorMsg(error.message || "Failed to sign in with Google. Check Firebase configuration.");
+      setErrorMsg(error.message || "Failed to sign in with Google.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +42,6 @@ function Login({ onLoginSuccess }) {
     setLoading(true);
     setErrorMsg('');
     try {
-      // Generate or retrieve persistent unique Guest ID for this browser session
       let guestId = localStorage.getItem('guest_session_id');
       if (!guestId) {
         guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
@@ -90,7 +87,6 @@ function Login({ onLoginSuccess }) {
         )}
 
         <div className="space-y-3">
-          {/* Real Google Sign In */}
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
@@ -117,20 +113,18 @@ function Login({ onLoginSuccess }) {
             {loading ? 'Authenticating...' : 'Sign in with Google'}
           </button>
 
-          {/* Divider */}
           <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-gray-200"></div>
             <span className="flex-shrink mx-4 text-xs font-semibold text-gray-400 uppercase">or</span>
             <div className="flex-grow border-t border-gray-200"></div>
           </div>
 
-          {/* Instant Guest Sign In */}
           <button
             onClick={handleGuestSignIn}
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg px-4 py-3 font-medium transition shadow-sm disabled:opacity-50 text-sm"
           >
-            👤 Continue as Guest (Instant Access)
+            Continue as Guest
           </button>
         </div>
       </div>

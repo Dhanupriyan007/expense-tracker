@@ -96,7 +96,6 @@ function BudgetForm({ user }) {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Category Dropdown & Custom Input */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select
@@ -123,7 +122,6 @@ function BudgetForm({ user }) {
           )}
         </div>
 
-        {/* Budget Limit */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Budget Limit ($)</label>
           <input

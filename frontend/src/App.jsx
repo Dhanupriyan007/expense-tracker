@@ -7,7 +7,6 @@ import ExpenseForm from './pages/ExpenseForm';
 import Budgets from './pages/Budgets';
 import BudgetForm from './pages/BudgetForm';
 import SplitBill from './pages/SplitBill';
-import Advisor from './pages/Advisor';
 import { logoutUser } from './firebase';
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 text-gray-800">
-        {/* Top Navigation Bar */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
           <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <div className="flex items-center space-x-6">
@@ -43,15 +41,11 @@ function App() {
                   Budgets
                 </Link>
                 <Link to="/split" className="hover:text-blue-600 transition whitespace-nowrap">
-                  Split Bill 🤝
-                </Link>
-                <Link to="/advisor" className="hover:text-blue-600 transition whitespace-nowrap">
-                  AI Advisor 🤖
+                  Split Bill
                 </Link>
               </nav>
             </div>
 
-            {/* Profile Info & Logout */}
             <div className="flex items-center space-x-4 flex-shrink-0">
               <div className="flex items-center space-x-2">
                 <img
@@ -74,7 +68,6 @@ function App() {
           </div>
         </header>
 
-        {/* Main Content View */}
         <main className="max-w-6xl mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -86,7 +79,6 @@ function App() {
             <Route path="/budgets/add" element={<BudgetForm user={user} />} />
             <Route path="/budgets/edit/:id" element={<BudgetForm user={user} />} />
             <Route path="/split" element={<SplitBill user={user} />} />
-            <Route path="/advisor" element={<Advisor user={user} />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>
