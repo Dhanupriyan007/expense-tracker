@@ -37,16 +37,19 @@ function Budgets({ user }) {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading budgets...</div>;
+    return <div className="p-8 text-center text-slate-400">Loading budgets...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Category Budgets</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-100">Category Budgets</h1>
+          <p className="text-sm text-slate-400">Set and monitor spending limits per category</p>
+        </div>
         <button
           onClick={() => navigate('/budgets/add')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-4 py-2 rounded-lg shadow-sm transition"
         >
           + Add Budget
         </button>
@@ -54,7 +57,7 @@ function Budgets({ user }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {budgets.length === 0 ? (
-          <p className="text-gray-500 py-6 col-span-2 text-center">No category budgets set yet.</p>
+          <p className="text-slate-500 py-6 col-span-2 text-center text-sm">No category budgets set yet.</p>
         ) : (
           budgets.map((item) => {
             const spent = Number(item.spent || 0);
@@ -66,54 +69,64 @@ function Budgets({ user }) {
             return (
               <div
                 key={item.id}
-                className={`bg-white p-6 rounded-lg shadow-sm border ${
+                className={`bg-slate-900 p-6 rounded-xl border ${
                   isExceeded
-                    ? 'border-red-300 bg-red-50/20'
+                    ? 'border-rose-800 bg-rose-950/20'
                     : isWarning
-                    ? 'border-yellow-300 bg-yellow-50/20'
-                    : 'border-gray-200'
+                    ? 'border-amber-800 bg-amber-950/20'
+                    : 'border-slate-800'
                 }`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Category</span>
-                    <h3 className="text-xl font-bold text-gray-800">{item.category}</h3>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</span>
+                    <h3 className="text-xl font-bold text-slate-100">{item.category}</h3>
                   </div>
 
                   <div>
                     {isExceeded && (
-                      <span className="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded border border-red-200">
+                      <span className="bg-rose-950 text-rose-300 border border-rose-800 text-xs font-bold px-2.5 py-1 rounded">
                         EXCEEDED ({percentage.toFixed(0)}%)
                       </span>
                     )}
                     {isWarning && (
-                      <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded border border-yellow-200">
+                      <span className="bg-amber-950 text-amber-300 border border-amber-800 text-xs font-bold px-2.5 py-1 rounded">
                         WARNING ({percentage.toFixed(0)}%)
                       </span>
                     )}
                     {!isExceeded && !isWarning && (
-                      <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded border border-green-200">
+                      <span className="bg-emerald-950 text-emerald-300 border border-emerald-800 text-xs font-bold px-2.5 py-1 rounded">
                         OK ({percentage.toFixed(0)}%)
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Spent: <strong className="text-gray-900">${spent.toFixed(2)}</strong></span>
-                  <span>Budget: <strong className="text-gray-900">${limit.toFixed(2)}</strong></span>
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-950 rounded-full h-2.5 mb-3 overflow-hidden border border-slate-800">
+                  <div
+                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                      isExceeded ? 'bg-rose-500' : isWarning ? 'bg-amber-500' : 'bg-indigo-500'
+                    }`}
+                    style={{ width: `${Math.min(100, percentage)}%` }}
+                  ></div>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4 border-t border-gray-100 mt-4">
+                <div className="flex justify-between text-sm text-slate-400 mb-2">
+                  <span>Spent: <strong className="text-slate-100">${spent.toFixed(2)}</strong></span>
+                  <span>Budget: <strong className="text-slate-100">${limit.toFixed(2)}</strong></span>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4 border-t border-slate-800 mt-4">
                   <button
                     onClick={() => navigate(`/budgets/edit/${item.id}`)}
-                    className="text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 px-3 py-1.5 rounded bg-blue-50"
+                    className="text-indigo-400 hover:text-indigo-300 font-medium text-xs bg-indigo-950/60 border border-indigo-800 px-3 py-1.5 rounded"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="text-red-600 hover:text-red-800 font-medium text-xs border border-red-200 px-3 py-1.5 rounded bg-red-50"
+                    className="text-rose-400 hover:text-rose-300 font-medium text-xs bg-rose-950/60 border border-rose-800 px-3 py-1.5 rounded"
                   >
                     Delete
                   </button>

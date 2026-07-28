@@ -86,22 +86,22 @@ function BudgetForm({ user }) {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading budget details...</div>;
+    return <div className="p-8 text-center text-slate-400">Loading budget details...</div>;
   }
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+    <div className="max-w-md mx-auto bg-slate-900 p-8 rounded-xl border border-slate-800 space-y-6">
+      <h1 className="text-2xl font-bold text-slate-100">
         {isEditing ? 'Edit Category Budget' : 'Add Category Budget'}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">Category</label>
           <select
             value={categoryOption}
             onChange={(e) => setCategoryOption(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             {PRESET_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
@@ -113,17 +113,17 @@ function BudgetForm({ user }) {
               <input
                 type="text"
                 required
-                placeholder="Enter custom category name..."
+                placeholder="Enter custom category..."
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Budget Limit ($)</label>
+          <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">Budget Limit ($)</label>
           <input
             type="number"
             step="0.01"
@@ -131,7 +131,7 @@ function BudgetForm({ user }) {
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
             placeholder="0.00"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -139,13 +139,13 @@ function BudgetForm({ user }) {
           <button
             type="button"
             onClick={() => navigate('/budgets')}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            className="px-4 py-2 border border-slate-800 text-slate-300 rounded-lg hover:bg-slate-800 text-sm font-medium"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold text-sm transition"
           >
             {isEditing ? 'Save Changes' : 'Add Budget'}
           </button>
