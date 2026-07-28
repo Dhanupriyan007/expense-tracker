@@ -37,7 +37,7 @@ function Login({ onLoginSuccess }) {
       if (response.ok && data.user) {
         onLoginSuccess(data.user);
       } else {
-        setErrorMsg(data.error || "Authentication failed on backend server.");
+        setErrorMsg(data.error || "Authentication failed on server.");
       }
     } catch (error) {
       console.error("Google Authentication error:", error);
@@ -92,33 +92,28 @@ function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100/80 p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 text-center space-y-6">
-        <div>
-          <span className="bg-indigo-50 text-indigo-600 border border-indigo-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-            Student Edition
-          </span>
-          <h1 className="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Expense Tracker</h1>
-          <p className="text-slate-500 text-sm mt-1">Smart, minimal budget management for students</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">Expense Tracker</h1>
+        <p className="text-gray-500 text-sm mb-6">Manage your daily expenses</p>
 
         {wakingUp && (
-          <div className="p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs rounded-xl font-medium text-left">
-            Waking up server host... Please wait a moment.
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs rounded text-left">
+            Connecting to server... Please wait a moment.
           </div>
         )}
 
         {errorMsg && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl text-left">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded text-left">
             {errorMsg}
           </div>
         )}
 
-        <div className="space-y-3 pt-2">
+        <div className="space-y-3">
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300/80 rounded-xl px-4 py-3 text-slate-700 font-semibold hover:bg-slate-50 transition shadow-xs disabled:opacity-50 text-sm"
+            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded px-4 py-2.5 text-gray-700 font-medium hover:bg-gray-50 transition text-sm disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -142,15 +137,15 @@ function Login({ onLoginSuccess }) {
           </button>
 
           <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink mx-4 text-xs font-bold text-slate-400 uppercase">or</span>
-            <div className="flex-grow border-t border-slate-200"></div>
+            <div className="flex-grow border-t border-gray-200"></div>
+            <span className="flex-shrink mx-3 text-xs text-gray-400">OR</span>
+            <div className="flex-grow border-t border-gray-200"></div>
           </div>
 
           <button
             onClick={handleGuestSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 py-3 font-semibold transition shadow-sm disabled:opacity-50 text-sm"
+            className="w-full bg-gray-800 hover:bg-gray-900 text-white rounded px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
           >
             Continue as Guest
           </button>
