@@ -7,7 +7,6 @@ function Login({ onLoginSuccess }) {
   const [wakingUp, setWakingUp] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Background ping on Login page load to warm up free server containers (eliminates cold starts)
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/health`).catch(() => {});
   }, []);
@@ -17,7 +16,6 @@ function Login({ onLoginSuccess }) {
     setWakingUp(false);
     setErrorMsg('');
 
-    // Timer to notify user if free server host is waking up from sleep
     const wakeTimer = setTimeout(() => setWakingUp(true), 2000);
 
     try {
@@ -94,28 +92,33 @@ function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Expense Tracker</h1>
-        <p className="text-gray-600 mb-6">Manage your student expenses easily</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100/80 p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 text-center space-y-6">
+        <div>
+          <span className="bg-indigo-50 text-indigo-600 border border-indigo-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            Student Edition
+          </span>
+          <h1 className="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Expense Tracker</h1>
+          <p className="text-slate-500 text-sm mt-1">Smart, minimal budget management for students</p>
+        </div>
 
         {wakingUp && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs rounded-md font-medium text-left">
-            Waking up free server host... Please wait a few seconds.
+          <div className="p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs rounded-xl font-medium text-left">
+            Waking up server host... Please wait a moment.
           </div>
         )}
 
         {errorMsg && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md text-left">
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl text-left">
             {errorMsg}
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300/80 rounded-xl px-4 py-3 text-slate-700 font-semibold hover:bg-slate-50 transition shadow-xs disabled:opacity-50 text-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -138,16 +141,16 @@ function Login({ onLoginSuccess }) {
             {loading ? 'Authenticating...' : 'Sign in with Google'}
           </button>
 
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-gray-200"></div>
-            <span className="flex-shrink mx-4 text-xs font-semibold text-gray-400 uppercase">or</span>
-            <div className="flex-grow border-t border-gray-200"></div>
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-4 text-xs font-bold text-slate-400 uppercase">or</span>
+            <div className="flex-grow border-t border-slate-200"></div>
           </div>
 
           <button
             onClick={handleGuestSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg px-4 py-3 font-medium transition shadow-sm disabled:opacity-50 text-sm"
+            className="w-full flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 py-3 font-semibold transition shadow-sm disabled:opacity-50 text-sm"
           >
             Continue as Guest
           </button>

@@ -60,20 +60,20 @@ function Dashboard({ user }) {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading dashboard...</div>;
+    return <div className="p-8 text-center text-slate-500 font-medium">Loading dashboard...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.name}</h1>
-          <p className="text-xs text-gray-500 mt-1">Student Account ID: {user.google_id || user.id}</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Welcome, {user.name}</h1>
+          <p className="text-xs text-slate-500 mt-1 font-medium">Student ID: {user.google_id || user.id}</p>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg text-sm text-blue-900 flex items-center gap-2 font-medium">
-          <span>Daily Safe Allowance:</span>
-          <strong className="text-blue-600 text-base font-bold">${data.daily_allowance.toFixed(2)} / day</strong>
+        <div className="bg-indigo-50/80 border border-indigo-100 px-4 py-2 rounded-xl text-sm text-indigo-900 flex items-center gap-2 font-medium">
+          <span className="text-slate-600">Daily Safe Allowance:</span>
+          <strong className="text-indigo-600 text-base font-bold">${data.daily_allowance.toFixed(2)} / day</strong>
         </div>
       </div>
 
@@ -82,10 +82,10 @@ function Dashboard({ user }) {
           {data.alerts.map((alert, index) => (
             <div
               key={index}
-              className={`p-4 rounded-lg border text-sm font-medium ${
+              className={`p-4 rounded-xl border text-sm font-medium ${
                 alert.type === 'exceeded'
-                  ? 'bg-red-50 border-red-200 text-red-800'
-                  : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                  ? 'bg-rose-50 border-rose-200 text-rose-800'
+                  : 'bg-amber-50 border-amber-200 text-amber-800'
               }`}
             >
               {alert.message}
@@ -94,8 +94,8 @@ function Dashboard({ user }) {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-xl shadow-md text-white">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-2">
+      <div className="bg-slate-900 p-6 rounded-2xl shadow-sm text-white space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Quick Text Expense Entry
         </h2>
         <form onSubmit={handleQuickAdd} className="flex flex-col sm:flex-row gap-3">
@@ -104,12 +104,12 @@ function Dashboard({ user }) {
             placeholder='e.g. "Spent 15 on lunch via UPI" or "Bought textbook 45 debit card"'
             value={quickText}
             onChange={(e) => setQuickText(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-gray-700/60 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
           />
           <button
             type="submit"
             disabled={quickLoading}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-lg transition text-sm shadow disabled:opacity-50"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm shadow-sm disabled:opacity-50"
           >
             {quickLoading ? 'Parsing...' : 'Auto-Add'}
           </button>
@@ -117,33 +117,33 @@ function Dashboard({ user }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm font-medium text-gray-500">Total Expenses</p>
-          <p className="text-3xl font-bold text-red-600 mt-2">${data.total_expenses.toFixed(2)}</p>
+        <div className="bg-white p-6 rounded-2xl shadow-xs border border-slate-200/80">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Expenses</p>
+          <p className="text-3xl font-extrabold text-rose-600 mt-2 tracking-tight">${data.total_expenses.toFixed(2)}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm font-medium text-gray-500">Total Budget</p>
-          <p className="text-3xl font-bold text-blue-600 mt-2">${data.total_budget.toFixed(2)}</p>
+        <div className="bg-white p-6 rounded-2xl shadow-xs border border-slate-200/80">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Budget</p>
+          <p className="text-3xl font-extrabold text-indigo-600 mt-2 tracking-tight">${data.total_budget.toFixed(2)}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <p className="text-sm font-medium text-gray-500">Remaining Budget</p>
-          <p className={`text-3xl font-bold mt-2 ${data.remaining_budget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className="bg-white p-6 rounded-2xl shadow-xs border border-slate-200/80">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Remaining Budget</p>
+          <p className={`text-3xl font-extrabold mt-2 tracking-tight ${data.remaining_budget >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
             ${data.remaining_budget.toFixed(2)}
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Expenses</h2>
+      <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-6">
+        <h2 className="text-base font-bold text-slate-900 mb-4">Recent Expenses</h2>
         {data.recent_expenses.length === 0 ? (
-          <p className="text-gray-500 py-4">No recent expenses found.</p>
+          <p className="text-slate-500 py-4 text-sm text-center">No recent expenses found.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
                   <th className="py-3 px-4">Description</th>
                   <th className="py-3 px-4">Category</th>
                   <th className="py-3 px-4">Payment Method</th>
@@ -151,14 +151,14 @@ function Dashboard({ user }) {
                   <th className="py-3 px-4 text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
+              <tbody className="divide-y divide-slate-100 text-sm">
                 {data.recent_expenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium text-gray-800">{expense.description}</td>
-                    <td className="py-3 px-4 text-gray-600">{expense.category}</td>
-                    <td className="py-3 px-4 text-gray-600">{expense.payment_method}</td>
-                    <td className="py-3 px-4 text-gray-500">{expense.expense_date}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-red-600">
+                  <tr key={expense.id} className="hover:bg-slate-50/80 transition">
+                    <td className="py-3 px-4 font-semibold text-slate-800">{expense.description}</td>
+                    <td className="py-3 px-4 text-slate-600">{expense.category}</td>
+                    <td className="py-3 px-4 text-slate-600">{expense.payment_method}</td>
+                    <td className="py-3 px-4 text-slate-500">{expense.expense_date}</td>
+                    <td className="py-3 px-4 text-right font-bold text-rose-600">
                       -${Number(expense.amount).toFixed(2)}
                     </td>
                   </tr>
