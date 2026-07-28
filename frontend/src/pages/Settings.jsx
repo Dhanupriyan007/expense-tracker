@@ -16,44 +16,44 @@ function Settings({ user }) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Settings</h1>
-        <p className="text-slate-400 text-sm mt-1">Manage your account preferences</p>
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-500 text-sm mt-0.5">Manage your account preferences</p>
       </div>
 
       {savedMsg && (
-        <div className="p-3 bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-sm rounded-lg">
+        <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded">
           {savedMsg}
         </div>
       )}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
-        <h2 className="text-base font-semibold text-slate-200 border-b border-slate-800 pb-3">User Profile</h2>
+      <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6 shadow-sm">
+        <h2 className="text-base font-semibold text-gray-800 border-b border-gray-200 pb-3">User Profile</h2>
 
         <div className="flex items-center space-x-4">
           <img
             src={user.profile_image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'user'}`}
             alt={user.name}
             referrerPolicy="no-referrer"
-            className="w-14 h-14 rounded-full border border-slate-700 object-cover"
+            className="w-14 h-14 rounded-full border border-gray-300 object-cover"
           />
           <div>
-            <h3 className="font-bold text-slate-100 text-lg">{user.name}</h3>
-            <p className="text-sm text-slate-400">{user.email}</p>
-            <span className="inline-block mt-1 text-xs bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded">
+            <h3 className="font-bold text-gray-900 text-lg">{user.name}</h3>
+            <p className="text-sm text-gray-500">{user.email}</p>
+            <span className="inline-block mt-1 text-xs bg-gray-100 border border-gray-200 text-gray-600 px-2 py-0.5 rounded font-medium">
               ID: {user.google_id || user.id}
             </span>
           </div>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4 pt-4 border-t border-slate-800">
-          <h2 className="text-base font-semibold text-slate-200">Preferences</h2>
+        <form onSubmit={handleSave} className="space-y-4 pt-4 border-t border-gray-200">
+          <h2 className="text-base font-semibold text-gray-800">Preferences</h2>
 
           <div>
-            <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">Currency Symbol</label>
+            <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Currency Symbol</label>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="$">USD ($)</option>
               <option value="₹">INR (₹)</option>
@@ -63,11 +63,11 @@ function Settings({ user }) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">Default Payment Method</label>
+            <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Default Payment Method</label>
             <select
               value={defaultPayment}
               onChange={(e) => setDefaultPayment(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="UPI">UPI</option>
               <option value="Debit Card">Debit Card</option>
@@ -80,7 +80,7 @@ function Settings({ user }) {
           <div className="pt-2 flex justify-end">
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2 rounded-lg transition shadow-sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded transition shadow-xs"
             >
               Save Preferences
             </button>

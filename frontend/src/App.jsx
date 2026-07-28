@@ -22,16 +22,14 @@ function Sidebar({ user, onLogout }) {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800/80 flex flex-col justify-between h-screen sticky top-0 flex-shrink-0">
-      <div className="p-6 space-y-8">
-        {/* Brand */}
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between h-screen sticky top-0 flex-shrink-0">
+      <div className="p-6 space-y-6">
         <Link to="/dashboard" className="block">
-          <span className="text-xl font-extrabold text-white tracking-tight">
+          <h1 className="text-xl font-bold text-gray-900">
             Expense Tracker
-          </span>
+          </h1>
         </Link>
 
-        {/* Sidebar Nav Items */}
         <nav className="space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -39,10 +37,10 @@ function Sidebar({ user, onLogout }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`block px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
+                className={`block px-4 py-2.5 rounded-md text-sm font-medium transition ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                    ? 'bg-blue-50 text-blue-600 font-semibold'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 {item.label}
@@ -52,24 +50,23 @@ function Sidebar({ user, onLogout }) {
         </nav>
       </div>
 
-      {/* User Profile & Logout at Bottom */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-900/50">
+      <div className="p-4 border-t border-gray-200 bg-gray-50">
         <div className="flex items-center space-x-3 mb-3">
           <img
             src={user.profile_image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'user'}`}
             alt={user.name}
             referrerPolicy="no-referrer"
-            className="w-9 h-9 rounded-full object-cover border border-slate-700"
+            className="w-9 h-9 rounded-full object-cover border border-gray-300"
           />
           <div className="overflow-hidden">
-            <p className="text-sm font-bold text-slate-200 truncate">{user.name}</p>
-            <p className="text-xs text-slate-500 truncate">{user.email}</p>
+            <p className="text-sm font-semibold text-gray-800 truncate">{user.name}</p>
+            <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
         </div>
 
         <button
           onClick={onLogout}
-          className="w-full text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg font-semibold transition border border-slate-700"
+          className="w-full text-xs bg-white hover:bg-gray-100 text-gray-700 py-2 rounded font-medium border border-gray-300 transition shadow-xs"
         >
           Logout
         </button>
@@ -92,17 +89,15 @@ function App() {
 
   return (
     <Router>
-      <div className="flex min-h-screen bg-slate-950 text-slate-100">
+      <div className="flex min-h-screen bg-gray-100 text-gray-800">
         <Sidebar user={user} onLogout={handleLogout} />
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="px-8 py-5 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md flex justify-between items-center sticky top-0 z-10">
-            <div>
-              <h1 className="text-lg font-bold text-slate-100">Welcome back, {user.name}</h1>
-            </div>
-            <div className="text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-              Account: {user.google_id || user.id}
-            </div>
+          <header className="px-8 py-4 border-b border-gray-200 bg-white flex justify-between items-center sticky top-0 z-10">
+            <h2 className="text-base font-bold text-gray-800">Welcome back, {user.name}</h2>
+            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded border border-gray-200 font-medium">
+              ID: {user.google_id || user.id}
+            </span>
           </header>
 
           <main className="p-8 flex-1 max-w-6xl w-full mx-auto">
